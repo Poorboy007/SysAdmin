@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="User" >
+
+    <resultMap id="BaseResultMap" type="com.icolsky.model.entity.system.User" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="username" property="username" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="password" property="password" jdbcType="VARCHAR" />
+        <result column="tel" property="tel" jdbcType="VARCHAR" />
+        <result column="email" property="email" jdbcType="VARCHAR" />
+        <result column="zone" property="zone" jdbcType="VARCHAR" />
+        <result column="description" property="description" jdbcType="VARCHAR" />
+        <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+        <result column="failure_date" property="failureDate" jdbcType="TIMESTAMP" />
+        <result column="salt" property="salt" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="base_case_list">
+        id, username, name, tel, email, zone, description, create_date, failure_date, status
+    </sql>
+
+    <sql id="page_sql" >
+        <if test="pageSize!=null and offsetNum!=null">
+            limit #{pageSize} offset #{offsetNum}
+        </if>
+    </sql>
+
+    <select id="findLoginUser" resultMap="BaseResultMap" parameterType="java.lang.String" >
+        select * from t_user where status = 1 and username = #{username}
+    </select>
+
+    <select id="findUserPageByMap" resultMap="BaseResultMap" parameterType="java.util.Map">
+        select <include refid="base_case_list" /> from t_user
+        <where>
+            <if test="id !=null ">and id = #{id} </if>
+            <if test="username !=null ">and username like #{username} </if>
+            <if test="name != null ">and name like #{name} </if> 
+            <if test="tel !=null ">and tel like #{tel} </if>
+            <if test="email !=null ">and email like #{email} </if>
+            <if test="zone !=null ">and zone like #{zone} </if>
+            <if test="description !=null ">and description like #{description} </if>
+            <if test="status !=null ">and status = #{status} </if>
+        </where>
+        order by id
+        <include refid="page_sql" />
+    </select>
+
+    <select id="findUserCountByMap" resultType="java.lang.Long" parameterType="java.util.Map">
+        select count(id) from t_user
+        <where>
+            <if test="id !=null ">and id = #{id} </if>
+            <if test="username !=null ">and username like #{username} </if>
+            <if test="name != null ">and name like #{name} </if>
+            <if test="tel !=null ">and tel like #{tel} </if>
+            <if test="email !=null ">and email like #{email} </if>
+            <if test="zone !=null ">and zone like #{zone} </if>
+            <if test="description !=null ">and description like #{description} </if>
+            <if test="status !=null ">and status = #{status} </if>
+        </where>
+    </select>
+ 
+    <insert id="insert" parameterType="com.icolsky.model.entity.system.User">
+        insert into t_user(
+            <trim suffixOverrides=",">
+                <if test="username !=null and username != ''">username, </if>
+                <if test="name != null and name != ''">name,  </if>
+                <if test="password !=null and password != ''">password, </if> 
+                <if test="tel !=null and tel != ''">tel, </if>
+                <if test="email !=null and email != ''">email, </if>
+                <if test="zone !=null and zone != ''">zone, </if>
+                <if test="description !=null and description != ''">description, </if>
+                <if test="failureDate!=null">failure_date,</if>
+                create_date
+            </trim>
+        )values(
+            <trim suffixOverrides=",">
+                <if test="username !=null and username != '' ">#{username}, </if>
+                <if test="name != null and name != '' ">#{name},  </if>
+                <if test="password !=null and password != '' ">#{password}, </if> 
+                <if test="tel !=null and tel != '' ">#{tel}, </if>
+                <if test="email !=null and email != '' ">#{email}, </if>
+                <if test="zone !=null and zone != '' ">#{zone}, </if>
+                <if test="description !=null and description != '' ">#{description}, </if>
+                <if test="failureDate !=null ">#{failureDate},</if>
+                now()
+            </trim>
+        )
+    </insert>
+
+    <update id="update" parameterType="com.icolsky.model.entity.system.User">
+        update t_user
+        <trim prefix="set" suffixOverrides=",">
+            <if test="username !=null ">username = #{username}, </if>
+            <if test="name != null ">name = #{name},  </if>
+            <if test="password !=null and password != '' ">password = #{password}, </if> 
+            <if test="tel !=null ">tel = #{tel}, </if>
+            <if test="email !=null ">email = #{email}, </if>
+            <if test="description !=null ">description = #{description}, </if>
+            <if test="failureDate !=null ">failure_date = #{failureDate},</if>
+            <if test="status !=null ">status = #{status},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="delteUserRole" parameterType="java.lang.Integer">
+        DELETE FROM t_user_role where user_id = #{userId}
+    </delete>
+
+    <insert id="insertUserRole" parameterType="java.util.Map">
+        INSERT INTO t_user_role(user_id, role_id)values(#{userId}, #{roleId})
+    </insert>
+
+</mapper>

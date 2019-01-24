@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Role" >
+
+    <resultMap id="BaseResultMap" type="com.icolsky.model.entity.system.Role" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="role" property="role" jdbcType="VARCHAR" />
+        <result column="description" property="description" jdbcType="VARCHAR" />
+        <result column="status" property="status" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="page_sql" >
+        <if test="pageSize!=null and offsetNum!=null">
+            limit #{pageSize} offset #{offsetNum}
+        </if>
+    </sql>
+
+    <select id="getAll" resultMap="BaseResultMap">
+        select * from t_role where status = 1
+    </select>
+
+    <select id="findRolePageByMap" resultMap="BaseResultMap" parameterType="java.util.Map" >
+        select * from t_role
+        <where>
+            <if test=" id!=null ">id = #{id} </if>
+            <if test=" role!=null and role != '' ">and role like #{role} </if>
+            <if test=" description!=null and description != '' ">and description like #{description} </if>
+            <if test=" status!=null ">and status = #{status} </if>
+        </where>
+        order by id
+        <include refid="page_sql" />
+    </select>
+
+    <select id="findRoleCountByMap" resultType="java.lang.Long"  parameterType="java.util.Map" >
+        select count(id) from t_role
+        <where>
+            <if test=" id!=null ">id = #{id} </if>
+            <if test=" role!=null and role != '' ">and role like #{role} </if>
+            <if test=" description!=null and description != '' ">and description like #{description} </if>
+            <if test=" status!=null ">and status = #{status} </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="com.icolsky.model.entity.system.Role">
+        insert into t_role(role, description, status)values(#{role}, #{description}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.icolsky.model.entity.system.Role">
+        update t_role
+        <trim prefix="set" suffixOverrides=",">
+            <if test=" role!=null and role!=''"> role=#{role}, </if>
+            <if test=" description!=null "> description=#{description}, </if>
+            <if test=" status!=null "> status=#{status}, </if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+
+    <delete id="deleteRolePermission"  parameterType="java.lang.Integer" >
+        DELETE from t_role_permission where role_id = #{roleId}
+    </delete>
+
+    <insert id="insertRolePermission" parameterType="java.util.Map" >
+        insert into t_role_permission(role_id, permission_id)values(#{roleId}, #{permissionId})
+    </insert>
+
+    <select id="findRoleIdsByUserId" resultType="java.lang.Integer" parameterType="java.lang.Integer" >
+        select role_id from t_user_role where user_id = #{userId}
+    </select>
+
+    <select id="findRoleIdsByDeptId" resultType="java.lang.Integer" parameterType="java.lang.Integer" >
+        select role_id from t_department_role where department_id = #{deptId}
+    </select>
+
+</mapper>

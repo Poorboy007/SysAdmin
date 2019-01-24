@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Permission" >
+
+    <resultMap id="BaseResultMap" type="com.icolsky.model.entity.system.Permission" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="icon" property="icon" jdbcType="VARCHAR" />
+        <result column="resource_type" property="resourceType" jdbcType="VARCHAR" />
+        <result column="description" property="description" jdbcType="VARCHAR" />
+        <result column="permission" property="permission" jdbcType="VARCHAR" />
+        <result column="url" property="url" jdbcType="VARCHAR" />
+        <result column="parent_id" property="parentId" jdbcType="INTEGER" />
+        <result column="sort" property="sort" jdbcType="INTEGER" />
+        <result column="status" property="status" jdbcType="INTEGER" />
+    </resultMap>
+
+    <sql id="page_sql" >
+        <if test="pageSize!=null and offsetNum!=null">
+            limit #{pageSize} offset #{offsetNum}
+        </if>
+    </sql>
+
+    <select id="getAll" resultMap="BaseResultMap" >
+        select * from t_permission where status = 1
+    </select>
+
+    <select id="findMenuByUserName" resultMap="BaseResultMap" parameterType="java.lang.String" >
+       SELECT p.id, p.name, p.icon, p.resource_type, p.description, p.permission, p.url, p.parent_id, p.sort, p.status FROM
+          t_user u,
+          t_role r,
+          t_permission p,
+          t_user_role ur,
+          t_role_permission rp
+        WHERE
+          u.id = ur.user_id
+          AND r.id = ur.role_id
+          AND r.id = rp.role_id
+          AND p.id = rp.permission_id
+          AND u.STATUS = 1
+          AND r.STATUS = 1
+          AND p.STATUS = 1
+          AND p.resource_type = 'menu'
+          AND u.username = #{userName}
+        GROUP BY p.id, p.name, p.icon, p.resource_type, p.description, p.permission, p.url, p.parent_id, p.sort, p.status
+    </select>
+
+    <select id="findFunctionByUserName" resultType="java.lang.String" parameterType="java.lang.String" >
+        SELECT p.permission FROM
+            t_user u,
+            t_role r,
+            t_permission p,
+            t_user_role ur,
+            t_role_permission rp
+        WHERE
+            u.id = ur.user_id
+            AND r.id = ur.role_id
+            AND r.id = rp.role_id
+            AND p.id = rp.permission_id
+            AND u.STATUS = 1
+            AND r.STATUS = 1
+            AND p.STATUS = 1
+            AND (p.resource_type = 'button' or p.resource_type = 'function')
+            AND u.username = #{userName}
+        Group BY p.permission
+    </select>
+
+    <select id="findPermissionsCountByName" resultType="java.lang.Long" parameterType="java.lang.String">
+        select count(id) from t_permission where name = #{name}
+    </select>
+
+    <insert id="insert" parameterType="com.icolsky.vo.common.SimpleMenu">
+        insert into t_permission(
+        <trim suffixOverrides=",">
+            <if test="name!=null and name!=''"> name,</if>
+            <if test="icon!=null and icon!=''"> icon,</if>
+            <if test="type!=null and type!=''"> resource_type,</if>
+            <if test="description!=null and description!=''"> description,</if>
+            <if test="parentId!=null"> parent_id,</if>
+            <if test="url!=null and url!=''"> url,</if>
+            <if test="sortnum!=null"> sort,</if>
+            <if test="permission!=null and permission!=''"> permission,</if>
+        </trim>
+        )values(
+        <trim suffixOverrides=",">
+            <if test="name!=null and name!=''"> #{name},</if>
+            <if test="icon!=null and icon!=''"> #{icon},</if>
+            <if test="type!=null and type!=''"> #{type},</if>
+            <if test="description!=null and description!=''"> #{description},</if>
+            <if test="parentId!=null"> #{parentId},</if>
+            <if test="url!=null and url!=''"> #{url},</if>
+            <if test="sortnum!=null"> #{sortnum},</if>
+            <if test="permission!=null and permission!=''"> #{permission},</if>
+        </trim>
+        )
+    </insert>
+
+    <update id="update" parameterType="com.icolsky.vo.common.SimpleMenu">
+        update t_permission
+        <set>
+            <if test="name!=null"> name = #{name}, </if>
+            <if test="icon!=null"> icon = #{icon}, </if>
+            <if test="type!=null and type !='' "> resource_type = #{type}, </if>
+            <if test="description!=null"> description = #{description}, </if>
+            <if test="parentId!=null"> parent_id = #{parentId}, </if>
+            <if test="url!=null"> url = #{url}, </if>
+            <if test="sortnum!=null"> sort = #{sortnum}, </if>
+            <if test="permission!=null"> permission = #{permission}, </if>
+            <if test="status!=null"> status = #{status}, </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Integer">
+      DELETE FROM t_permission WHERE id = #{permissionId}
+    </delete>
+
+    <select id="findPermissionIdsByRoleId" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+        select permission_id from t_role_permission where role_id = #{roleId}
+    </select>
+
+</mapper>
